@@ -1,0 +1,37 @@
+{
+    "name": "imdong/easemob-sdk",
+    "description": "适用于 环信 IM 的 SDK 包",
+    "type": "library",
+    "minimum-stability": "stable",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "ImDong",
+            "email": "www@qs5.org"
+        }
+    ],
+    "keywords": [
+        "ImDong",
+        "Laravel",
+        "Easemob",
+        "环信"
+    ],
+    "require": {
+        "guzzlehttp/guzzle": "^7.2"
+    },
+    "extra": {
+        "laravel": {
+            "aliases": {
+                "Easemob": "ImDong\\Easemob\\Facades\\Easemob"
+            },
+            "providers": [
+                "ImDong\\Easemob\\Providers\\EasemobServiceProvider"
+            ]
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "ImDong\\Easemob\\": "src/"
+        }
+    }
+}
