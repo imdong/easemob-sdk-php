@@ -19,6 +19,11 @@
     "require": {
         "guzzlehttp/guzzle": "^7.2"
     },
+    "autoload": {
+        "psr-4": {
+            "ImDong\\Easemob\\": "src/"
+        }
+    },
     "extra": {
         "laravel": {
             "aliases": {
@@ -27,11 +32,6 @@
             "providers": [
                 "ImDong\\Easemob\\Providers\\EasemobServiceProvider"
             ]
-        }
-    },
-    "autoload": {
-        "psr-4": {
-            "ImDong\\Easemob\\": "src/"
         }
     }
 }

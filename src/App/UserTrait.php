@@ -236,7 +236,7 @@ trait UserTrait
             ]
         );
 
-        return $result['entities'];
+        return true;
     }
 
     /**

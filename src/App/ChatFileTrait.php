@@ -1,6 +1,6 @@
 <?php
 /**
- * 环信消息实现
+ * 环信 文件上传下载
  *
  * @author  ImDong (www@qs5.org)
  * @created 2021-01-08 11:39
@@ -24,83 +24,89 @@ trait ChatFileTrait
     /**
      * 消息路由/前缀
      *
-     * @var null $message_path
+     * @var string $message_path
      */
-    public $message_path = 'messages';
+    public $chatfile_path = 'chatfiles';
 
     /**
-     * 消息类型对照表
+     * 上传文件
      *
-     * @var string[] message_type_map
-     */
-    private $message_type_map = [
-        'txt'   => '文本消息',
-        'img'   => '图片消息',
-        'loc'   => '位置信息',
-        'audio' => '语音消息',
-        'video' => '视频消息',
-        'file'  => '文件消息'
-    ];
-
-
-
-    /**
-     * 发送文本消息
-     *
-     * @param string      $target_type
-     * @param             $target
-     * @param string      $msg
-     * @param string|null $from
-     * @param array       $ext
-     * @return array
-     * @throws EasemobException
-     * @author  ImDong (www@qs5.org)
-     * @created 2021-01-09 17:42
-     */
-    public function messageText(string $target_type, $target, string $msg, string $from = null, array $ext = []): array
-    {
-        return $this->messageSend($target_type, $target, 'txt', $msg, [
-            'form' => $from,
-            'ext'  => $ext
-        ]);
-    }
-
-    /**
-     * 发送消息 (最终实现)
-     *
-     * @param string          $target_type
-     * @param string|string[] $target
-     * @param string          $type
-     * @param string          $msg
-     * @param array           $option
-     *
+     * @param string|resource $file
+     * @param bool            $restrict_access
      * @return array
      *
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-09 17:47
      */
-    public function messageSend(string $target_type, $target, string $type, string $msg, array $option = []): array
+    public function fileUpload($file, bool $restrict_access = true): array
     {
-        // 处理收件人
-        $targets = $target;
-        if (is_string($target)) {
-            $targets = [$target];
-        }
-        if (!is_array($targets)) {
-            throw new EasemobException('The {target} must be a string[]');
+        $resource = $file;
+        if (is_string($file)) {
+            $resource = fopen($file, 'r');
         }
 
+        if (!is_resource($resource)) {
+            throw new EasemobException('{$file} Is not a valid file');
+        }
 
-
-
-        $result = $this->send('POST', $this->message_path, [
-            [
-
+        $result = $this->send('POST', $this->chatfile_path, [], [
+            'multipart' => [
+                [
+                    'name'     => 'file',
+                    'contents' => $resource
+                ]
+            ],
+            'headers'   => [
+                'restrict-access' => $restrict_access
             ]
         ]);
 
-        return $result['data'];
+        return array_shift($result['entities']);
+    }
+
+    /**
+     * fileGet
+     *
+     * @param string|array $uuid
+     * @param string|null  $share_secret
+     * @return string
+     * @throws EasemobException
+     * @author  ImDong (www@qs5.org)
+     * @created 2021-01-12 09:53
+     */
+    public function fileGet($uuid, string $share_secret = null): string
+    {
+        if (is_array($uuid)) {
+            $share_secret = $share_secret ?? $uuid['share-secret'] ?? null;
+            $uuid         = $uuid['uuid'] ?? null;
+        }
+
+        if (empty($uuid)) {
+            throw new EasemobException('{uuid} cannot be empty');
+        }
+
+        $headers = [
+            'Accept' => 'application/octet-stream'
+        ];
+        if (!empty($share_secret)) {
+            $headers['share-secret'] = $share_secret;
+        }
+
+        // 直接保存到临时文件
+        if (!$tmp_file = tempnam(sys_get_temp_dir(), 'easemob_')) {
+            throw new EasemobException('Cannot create temporary file');
+        }
+
+        $this->send('GET',
+            sprintf('%s/%s', $this->chatfile_path, $uuid),
+            [
+                'headers' => $headers,
+                'save_to' => $tmp_file
+            ]
+        );
+
+        return $tmp_file;
     }
 
 }

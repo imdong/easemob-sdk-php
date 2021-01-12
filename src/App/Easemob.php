@@ -6,6 +6,7 @@ namespace ImDong\Easemob\App;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Psr7\Request;
+use GuzzleHttp\Psr7\Response;
 use ImDong\Easemob\Assists\StorageAssist;
 use ImDong\Easemob\Exceptions\EasemobException;
 
@@ -19,7 +20,7 @@ use ImDong\Easemob\Exceptions\EasemobException;
  */
 class Easemob
 {
-    use UserTrait, MessageTrait;
+    use UserTrait, MessageTrait, ChatFileTrait;
 
     /**
      * 用户
@@ -231,12 +232,12 @@ class Easemob
      * @param string     $uri
      * @param array|null $body   $method = POST / PUT 时必须存在，其他请求时为 $options
      * @param array      $options
-     * @return array
+     * @return array|Response
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-08 13:39
      */
-    public function send(string $method, string $uri, array $body = null, array $options = []): array
+    public function send(string $method, string $uri, array $body = null, array $options = [])
     {
         // 整理一下参数补充顺序逻辑
         $method = strtoupper($method);
@@ -274,17 +275,23 @@ class Easemob
                 ))->setResult($result);
             }
 
-            // 过滤掉一些不需要的参数
-            if (!($options['not_hidden'] ?? false)) {
-                $result = array_diff_key($result, array_flip($this->hidden_keys));
+            // 检查文件内容
+            $content_type = explode(';', $response->getHeader('Content-Type')['0'] ?? '')['0'];
+            switch ($content_type) {
+                case 'application/json':
+                    // 过滤掉一些不需要的参数
+                    if (!($options['not_hidden'] ?? false)) {
+                        $result = array_diff_key($result, array_flip($this->hidden_keys));
+                    }
+                    break;
+                default:
+                    $result = $response;
             }
-
         } catch (GuzzleException $e) {
             throw new EasemobException($e->getMessage(), $e->getCode(), $e->getPrevious());
         }
 
         return $result;
     }
-
 
 }
