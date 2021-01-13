@@ -25,7 +25,7 @@ class Easemob
     /**
      * 用户
      */
-    public const TARGET_TYPE_USER = 'user';
+    public const TARGET_TYPE_USERS = 'users';
 
     /**
      * 群
@@ -42,8 +42,8 @@ class Easemob
      *
      * @var string[] target_type_map
      */
-    public static $target_type_map = [
-        self::TARGET_TYPE_USER        => '用户',
+    public $target_type_map = [
+        self::TARGET_TYPE_USERS       => '用户',
         self::TARGET_TYPE_CHAT_GROUPS => '群',
         self::TARGET_TYPE_CHAT_ROOMS  => '聊天室'
     ];

@@ -42,7 +42,6 @@ trait MessageTrait
         'file'  => '文件消息'
     ];
 
-
     /**
      * 发送文本消息
      *
@@ -51,12 +50,12 @@ trait MessageTrait
      * @param string          $target_type
      * @param string|null     $from
      * @param array           $ext
-     * @return array
+     * @return array|string
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-09 17:42
      */
-    public function messageText($target, string $msg, string $target_type = 'users', string $from = null, array $ext = []): array
+    public function messageText($target, string $msg, string $target_type = Easemob::TARGET_TYPE_USERS, string $from = null, array $ext = [])
     {
         return $this->messageSend(
             $target_type,
@@ -79,7 +78,7 @@ trait MessageTrait
      * @param string          $target_type
      * @param string|null     $from
      * @param array           $ext
-     * @return array
+     * @return array|string
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-12 10:53
@@ -87,8 +86,8 @@ trait MessageTrait
     public function messageImage(
         $target,
         string $file_uuid, string $share_secret = null, string $filename = 'test-img.jpg', $width = 480, $height = 720,
-        string $target_type = 'users', string $from = null, array $ext = []
-    ): array {
+        string $target_type = Easemob::TARGET_TYPE_USERS, string $from = null, array $ext = []
+    ) {
         return $this->messageSend(
             $target_type,
             $target,
@@ -117,7 +116,7 @@ trait MessageTrait
      * @param string      $target_type
      * @param string|null $from
      * @param array       $ext
-     * @return array
+     * @return array|string
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-12 11:22
@@ -126,7 +125,7 @@ trait MessageTrait
         $target,
         string $file_uuid, string $share_secret = null, string $filename = 'test-audio.amr', $length = 10,
         string $target_type = 'users', string $from = null, array $ext = []
-    ): array {
+    ) {
         return $this->messageSend(
             $target_type,
             $target,
@@ -155,7 +154,7 @@ trait MessageTrait
      * @param string      $target_type
      * @param string|null $from
      * @param array       $ext
-     * @return array
+     * @return array|string
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-12 11:26
@@ -166,8 +165,8 @@ trait MessageTrait
         string $thumb_secret = null, string $share_secret = null,
         string $filename = 'test-video.mp4',
         $length = 10, $file_length = 58103,
-        string $target_type = 'users', string $from = null, array $ext = []
-    ): array {
+        string $target_type = Easemob::TARGET_TYPE_USERS, string $from = null, array $ext = []
+    ) {
         return $this->messageSend(
             $target_type,
             $target,
@@ -195,14 +194,14 @@ trait MessageTrait
      * @param string      $target_type
      * @param string|null $from
      * @param array       $ext
-     * @return array
+     * @return array|string
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-12 11:32
      */
     public function messageLocation(
         $target, string $lat, string $lng, string $addr,
-        string $target_type = 'users', string $from = null, array $ext = []
+        string $target_type = Easemob::TARGET_TYPE_USERS, string $from = null, array $ext = []
     ): array {
         return $this->messageSend(
             $target_type,
@@ -221,14 +220,14 @@ trait MessageTrait
      * @param string      $target_type
      * @param string|null $from
      * @param array       $ext
-     * @return array
+     * @return array|string
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-12 11:35
      */
     public function messageCommand(
-        $target, string $action, string $target_type = 'users', string $from = null, array $ext = []
-    ): array {
+        $target, string $action, string $target_type = Easemob::TARGET_TYPE_USERS, string $from = null, array $ext = []
+    ) {
         return $this->messageSend(
             $target_type,
             $target,
@@ -247,14 +246,14 @@ trait MessageTrait
      * @param string      $target_type
      * @param string|null $from
      * @param array       $ext
-     * @return array
+     * @return array|string
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-12 11:37
      */
     public function messageCustom(
-        $target, string $custom_event, array $custom_Ext = null, string $target_type = 'users', string $from = null, array $ext = []
-    ): array {
+        $target, string $custom_event, array $custom_Ext = null, string $target_type = Easemob::TARGET_TYPE_USERS, string $from = null, array $ext = []
+    ) {
         $msg = [
             'customEvent' => $custom_event
         ];
@@ -280,13 +279,13 @@ trait MessageTrait
      * @param string|array    $msg
      * @param array           $option
      *
-     * @return array
+     * @return array|string
      *
      * @throws EasemobException
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-09 17:47
      */
-    public function messageSend(string $target_type, $target, string $message_type, $msg, array $option = []): array
+    public function messageSend(string $target_type, $target, string $message_type, $msg, array $option = [])
     {
         // 目标类型
         if (!isset($this->target_type_map[$target_type])) {
@@ -329,7 +328,13 @@ trait MessageTrait
         // 发送消息
         $result = $this->send('POST', $this->message_path, $body);
 
-        return $result['data'];
+        // 发送到单人的返回单个
+        $return = $result['data'];
+        if (is_string($target)) {
+            $return = array_shift($return);
+        }
+
+        return $return;
     }
 
 }
