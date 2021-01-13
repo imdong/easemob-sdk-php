@@ -4,6 +4,7 @@
     "type": "library",
     "minimum-stability": "stable",
     "license": "MIT",
+    "version": "0.0.2",
     "authors": [
         {
             "name": "ImDong",
