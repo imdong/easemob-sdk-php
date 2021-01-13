@@ -268,8 +268,10 @@ trait UserTrait
      *
      * 设置推送消息至客户端的方式，修改后及时有效。服务端对应不同的设置，向用户发送不同展示方式的消息。
      *
-     * @param string $username
-     * @param bool   $switch 是否免打扰
+     * @param string   $username
+     * @param bool     $switch 是否免打扰
+     * @param int|null $start
+     * @param int|null $end
      * @return array
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-08 18:00
