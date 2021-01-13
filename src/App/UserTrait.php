@@ -297,11 +297,11 @@ trait UserTrait
      *
      * @param string $username
      * @param string $password
-     * @return array
+     * @return string
      * @author  ImDong (www@qs5.org)
      * @created 2021-01-08 17:02
      */
-    public function userGetTokenByPassword(string $username, string $password): array
+    public function userGetTokenByPassword(string $username, string $password): string
     {
         // 获取 Token 并检查过期时间
         if ($this->cache_user_token >= 0 && $token = StorageAssist::getCache(sprintf('UserAccessToken:%s', $username))) {
@@ -309,7 +309,7 @@ trait UserTrait
         }
 
         // 登录并获取 Token
-        $result = $this->send('POST', sprintf('%s/token', $this->user_path), [
+        $result = $this->send('POST', sprintf('token'), [
             'grant_type' => 'password',
             'username'   => $username,
             'password'   => $password,
@@ -322,5 +322,20 @@ trait UserTrait
         }
 
         return $result['entities']['access_token'];
+    }
+
+    /**
+     * 强制下线
+     *
+     * @param string $username
+     * @return bool
+     * @author  ImDong (www@qs5.org)
+     * @created 2021-01-12 17:44
+     */
+    public function userDisconnect(string $username): bool
+    {
+        $result = $this->send('GET', sprintf('%s/%s/disconnect', $this->user_path, $username));
+
+        return $result['data']['result'];
     }
 }
