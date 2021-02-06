@@ -305,8 +305,10 @@ trait UserTrait
      */
     public function userGetTokenByPassword(string $username, string $password): string
     {
+        $key = sprintf('%s.UserAccessToken:%s', $this->cache_prefix, $username);
+
         // 获取 Token 并检查过期时间
-        if ($this->cache_user_token >= 0 && $token = StorageAssist::getCache(sprintf('UserAccessToken:%s', $username))) {
+        if ($this->cache_user_token >= 0 && $token = StorageAssist::getCache($key)) {
             return $token;
         }
 
@@ -320,7 +322,7 @@ trait UserTrait
         // 写入缓存
         if ($this->cache_user_token >= 0) {
             $expires = time() + ($this->cache_user_token == 0 ? $result['expires_in'] : $this->cache_user_token);
-            StorageAssist::setCache(sprintf('UserAccessToken:%s', $username), $result['access_token'], $expires);
+            StorageAssist::setCache($key, $result['access_token'], $expires);
         }
 
         return $result['entities']['access_token'];

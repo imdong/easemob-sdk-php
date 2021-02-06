@@ -84,11 +84,18 @@ class Easemob
     public $client_secret = null;
 
     /**
+     * 用于缓存的 Key 前缀
+     *
+     * @var string cache_prefix
+     */
+    public $cache_prefix = 'Easemob';
+
+    /**
      * 用于缓存 Client Auth Token 的 Key
      *
      * @var string cache_client_token
      */
-    public $cache_client_token = 'AuthToken';
+    public $cache_client_token = 'Auth.ClientToken';
 
     /**
      * 是否缓存用户 Token
@@ -143,7 +150,7 @@ class Easemob
     public function setOption($key, $value = null, bool $load_config = false)
     {
         // 可配置属性
-        $option_keys = ['api_domain', 'org_name', 'app_name', 'client_id', 'client_secret', 'cache_user_token'];
+        $option_keys = ['api_domain', 'org_name', 'app_name', 'client_id', 'client_secret', 'cache_prefix', 'cache_user_token'];
         $update_url  = ['api_domain', 'org_name', 'app_name'];
 
         // 修改属性
@@ -201,8 +208,9 @@ class Easemob
     public function getAuthToken(): string
     {
         // 获取 Token 并检查过期时间
+        $key = sprintf('%s.%s', $this->cache_prefix, $this->cache_client_token);
         if (
-            ($this->client_credentials || $this->client_credentials = StorageAssist::getCache($this->cache_client_token))
+            ($this->client_credentials || $this->client_credentials = StorageAssist::getCache($key))
             && time() - $this->client_credentials['expires'] < 60
         ) {
             return $this->client_credentials['access_token'];
@@ -220,7 +228,8 @@ class Easemob
 
         // 保存并写入到缓存
         $this->client_credentials = $result;
-        StorageAssist::setCache($this->cache_client_token, $result, $result['expires']);
+        $key                      = sprintf('%s.%s', $this->cache_prefix, $this->cache_client_token);
+        StorageAssist::setCache($key, $result, $result['expires']);
 
         return $this->client_credentials['access_token'];
     }
